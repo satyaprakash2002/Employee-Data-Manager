@@ -1,5 +1,6 @@
 package EmployeeDataManager;
 import java.util.*;
+import java.sql.*;
 import java.io.*;
 public class Employee_Add {
 	
@@ -9,28 +10,34 @@ public class Employee_Add {
 
         EmployeeDetail emp=new EmployeeDetail();
         emp.getInfo();
+        
+        String url = "jdbc:mysql://localhost:3306/employeedatamanager";
+		String user = "root";
+		String pass = "S@ty@2002";
+		Connection conn = null;
+		Statement stmt = null;
+		
         try{
-            File f1=new File("file"+emp.employ_id+".txt");
-            if(f1.createNewFile()){
-                FileWriter myWriter = new FileWriter("file"+emp.employ_id+".txt");
-                myWriter.write("Employee ID:"+emp.employ_id+"\n"+
-                "Employee Name     :"+emp.name+"\n"+
-                "Father's Name     :"+emp.father_name+"\n"+
-                "Employee Contact  :"+emp.employ_contact+"\n"+
-                "Email Information :"+emp.email+"\n"+
-                "Employee position :"+emp.position+"\n"+
-                "Employee Salary   :"+emp.employ_salary);
-                myWriter.close();
-                System.out.println("\nEmployee has been Added :)\n");
+        	conn = DriverManager.getConnection(url,user,pass);
+			
+			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			
+        	String queryCheck = "SELECT * from employee WHERE Id = " + emp.employ_id;
+        	ResultSet rs = stmt.executeQuery(queryCheck); // execute the query, and get a java resultset
 
+        	// if this ID already exists, we quit
+        	if(rs.absolute(1)) {
+        	     System.out.println("Employee already exists in the database...");
+        	     System.out.print("\nPress Enter to Continue...");
+                 sc.nextLine();
+        	}else {
+        		String exp = "insert into employee values('"+emp.employ_id+"','"+emp.employ_id+"','"+emp.father_name+"','"+emp.email+"','"+emp.position+"','"+emp.employ_contact+"','"+emp.employ_salary+"');";
+        		System.out.println("\nEmployee has been Added :)\n");
+        		stmt.execute(exp);
                 System.out.print("\nPress Enter to Continue...");
                 sc.nextLine();
-            }
-            else {
-                System.out.println("\nEmployee already exists :(");
-                System.out.print("\nPress Enter to Continue...");
-                sc.nextLine();
-            }
+        	}
+        	
         }
         catch(Exception e){System.out.println(e);}
     }
